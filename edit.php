@@ -4,14 +4,14 @@ include "functionality.php";
 $error = [];
 session_start();
 
-if (!isset($_SESSION["email"])) {
-    header("Location: index.php");
-}
-$id = $_GET['id']; //id wise data anbo get diye
+ if (!isset($_SESSION["email"])) {
+     header("Location: index.php");
+ }
+$id = $_GET['id']; //id wise data anbo get diye                                         
 $sql =  "SELECT * FROM users WHERE id=$id"; //sql kortesi jekhane id
 $result = mysqli_query($conn,$sql); //query chalaitesi
 $value = mysqli_fetch_assoc($result); // queryr value array diye fetch kortesi
-
+ 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Escape special characters in form inputs to prevent SQL injection
@@ -22,8 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = mysqli_real_escape_string($conn, $_POST['address']);
     $city = mysqli_real_escape_string($conn, $_POST['city']);
 
-    if (isset($_FILES)) { //file ta jodi upload dei
+    if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) { //file ta jodi upload dei
         $up  = image($_FILES);
+        //echo print_r($up);       
         if ($up) {
             $sql1 = "UPDATE users SET  email='$email', password='$password',fname='$firstName', lname='$lastName',address='$address',city='$city',file = '$up'  WHERE id=$id";
         } else {

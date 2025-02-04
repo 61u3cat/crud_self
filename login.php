@@ -2,9 +2,10 @@
 include 'config.php';
 session_start();
 
-// if (!isset($_SESSION["email"])) {
-//     header("Location: index.php");
-// }
+
+if (isset($_SESSION["email"])) {
+    header("Location: index.php");
+}
 ?>
 
 <!DOCTYPE html>
@@ -19,9 +20,9 @@ session_start();
 
 <body>
     <div class="container">
-        <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh" >
-        <div class="row">
-                
+        <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh">
+            <div class="row">
+
                 <h3 class="heading">User Login</h3>
                 <!-- Form Start -->
                 <form action="<?php $_SERVER['PHP_SELF'] ?>" method="POST">
@@ -34,32 +35,39 @@ session_start();
                         <input type="password" name="password" class="form-control" placeholder="" required>
                     </div>
                     <div>
-                        <br><input type="submit" name="login" class="btn btn-primary mb-3" value="login" />  <a href="create.php" class="btn btn-success mb-3">Signup</a>
+                        <br>
+                        <input type="submit" name="login" class="btn btn-primary mb-3" value="login" />
+                        <a href="create.php" class="btn btn-success mb-3">Signup</a>
                     </div>
                 </form>
                 <?php
                 if (isset($_POST['login'])) {
-                    include "config.php";
+
                     $email = mysqli_real_escape_string($conn, $_POST['email']);
-                    $password = mysqli_real_escape_string($conn, $_POST['password']);
-                    $sql = "SELECT * FROM users WHERE email  = '{$email}' AND password = '{$password}'";
+                    //$password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
+
+                    $sql = "SELECT * FROM users WHERE email  = '{$email}'";
                     $result = mysqli_query($conn, $sql) or die("query failed");
-
-
-
-
-
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            session_start();
-                            $_SESSION["id"] = $row['id'];
-                            $_SESSION["email"] = $row['email'];                           
-                            $_SESSION["password"] = $row['password'];
-                            header("Location: index.php");
-                        }
+                    if (mysqli_num_rows($result)) {
+                        $row = mysqli_fetch_assoc($result);
+                        $hashUser = $row['password'];
+                      } else {
+                          echo 'email not found';
+                         exit;
+                          // header("Location: login.php");
+                     }
+                    $verify = password_verify($_POST['password'], $hashUser);
+                    if ($verify) {
+                        $_SESSION["email"] = $row['email'];
+                        header("Location: index.php");
                     } else {
-                        echo 'password & email doesnt match';
+                        if(!$verify){
+                            echo 'Password vul';
+                        }else{
+                            echo 'Email vul';
+                        }
+                        //echo 'password & email doesnt match';
                     }
                 }
                 ?>

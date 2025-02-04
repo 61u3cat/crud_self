@@ -4,9 +4,7 @@ include 'config.php';
 include 'functionality.php';
 session_start();
 
-if (!isset($_SESSION["email"])) {
-    header("Location: index.php");
-}
+
 $error = []; // Initialize an array to store any errors
 
 // Check if the form has been submitted using the POST method
@@ -20,43 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $city = mysqli_real_escape_string($conn, $_POST['city']);
 
 
-    if (isset($_FILES)) { //file ta jodi upload dei
-        $up  = image($_FILES);
-        if ($up) {
-            $sql = "INSERT INTO users (email, password, fname, lname, address, file, city)
+    $checkemail = "SELECT email FROM users WHERE email= '$email'";
+    $result = mysqli_query($conn, $checkemail);
+    if (mysqli_num_rows($result) > 0) {
+        $error[] =  "Email already exists,try another";
+    } else {
+    
+        if (!empty($_FILES['file']['name'])) { //file ta jodi upload dei
+            $up  = image($_FILES);
+            if ($up) {
+                $sql = "INSERT INTO users (email, password, fname, lname, address, file, city)
                 VALUES ('$email','$password','$firstName','$lastName','$address','$up','$city')";
+              }else {
+                 $sql = "INSERT INTO users (email, password, fname, lname, address, city)
+                VALUES ('$email','$password','$firstName','$lastName','$address','$city')";
+             }
         } else {
             $sql = "INSERT INTO users (email, password, fname, lname, address, city)
                 VALUES ('$email','$password','$firstName','$lastName','$address','$city')";
         }
-    } else {
-        $sql = "INSERT INTO users (email, password, fname, lname, address, city)
-                VALUES ('$email','$password','$firstName','$lastName','$address','$city')";
-    }
-
-    // Validation
-    if (empty($email)) $error[] = "Email is required"; // Check if email is provided
-    if (empty($password)) $error[] = "Password is required"; // Check if password is provided
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $error[] = "Invalid email format"; // Validate email format
-
-    // If no errors, proceed to insert the user data into the database
-    if (empty($error)) {
-       
-        // Prepare the SQL statement to insert user data
-
-
-
-        if (mysqli_query($conn, $sql)) {
-            // If successful, redirect to the index page
-
-            header("Location: index.php");
-
-            exit(); // Stop further execution
-        } else {
-            // If there's an error, add it to the error array
-            $error[] = "Error: " . mysqli_error($conn);
-        }
-    }
+        mysqli_query($conn, $sql);
+        header("Location: login.php");
+}
 }
 ?>
 <!DOCTYPE html>
@@ -80,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <!-- User creation form -->
-        <form  action="create.php" method="POST" enctype="multipart/form-data">
+        <form action="create.php" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <!-- Email input -->
                 <div class="col-md-6">
