@@ -6,16 +6,18 @@ include 'config.php';
 session_start();
 // Check if the user's email is set in the session (i.e., if they're logged in)
 if (!isset($_SESSION["email"])) {
-     // If not, redirect the user to the login page
-     header("Location: login.php");
- }
+    // If not, redirect the user to the login page
+    header("Location: login.php");
+}
 
- 
+
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>User Management</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css">
     <!-- Include Bootstrap CSS from CDN for styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -44,24 +46,9 @@ if (!isset($_SESSION["email"])) {
             </thead>
             <tbody>
                 <?php
-                // Define the number of records per page
-                $limit = 3;
-
-                // Get the current page number from the URL, default is 1
-                $page = isset($_GET['page']) ? $_GET['page'] : 1;
-       
-                // Calculate the starting record of the current page
-                $offset = ($page - 1) * $limit;
-       
-                // SQL query to select all users who are not deleted, with pagination
-                $sql = "SELECT * FROM users WHERE delete_at IS NULL LIMIT {$offset}, {$limit}";
-
-                // Execute the query
+                $sql = "SELECT * FROM users WHERE delete_at IS NULL";
                 $result = mysqli_query($conn, $sql);
-
-                // Check if there are any records returned
                 if (mysqli_num_rows($result) > 0) {
-                    // Loop through each user
                     while ($row = mysqli_fetch_assoc($result)) {
                 ?>
                         <tr>
@@ -94,43 +81,13 @@ if (!isset($_SESSION["email"])) {
                 ?>
             </tbody>
         </table>
-        <?php
-         
-        // Query to count the total number of users (excluding deleted ones)
-        $sql1 = "SELECT COUNT(*) AS total FROM users WHERE delete_at IS NULL";
-        $result1 = mysqli_query($conn, $sql1) or die('Query failed');
-
-        // Fetch the total number of records
-        $row = mysqli_fetch_assoc($result1);
-        $total_records = $row['total'];
-
-        // Calculate the total number of pages
-        $total_pages = ceil($total_records / $limit);
-
-        // Display pagination if there's more than one page
-        if ($total_pages > 1) {
-            echo '<nav><ul class="pagination justify-content-center">';
-
-            // Previous page link
-            if ($page > 1) {
-                echo '<li class="page-item"><a class="page-link" href="index.php?page=' . ($page - 1) . '">Prev</a></li>';
-            }
-
-            // Page number links
-            for ($i = 1; $i <= $total_pages; $i++) {
-                // Highlight the active page
-                $active = ($i == $page) ? 'active' : '';
-                echo '<li class="page-item ' . $active . '"><a class="page-link" href="index.php?page=' . $i . '">' . $i . '</a></li>';
-            }
-
-            // Next page link
-            if ($page < $total_pages) {
-                echo '<li class="page-item"><a class="page-link" href="index.php?page=' . ($page + 1) . '">Next</a></li>';
-            }
-
-            echo '</ul></nav>';
-        }
-        ?>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
+    <script>
+        let table = new DataTable('.table');
+    </script>
 </body>
+
 </html>
